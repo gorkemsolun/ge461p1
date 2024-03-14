@@ -1,0 +1,34 @@
+---
+title: <center> <h2> Spring 2024 - GE 461 Introduction to Data Science</h2> Dodgers Exploratory Data Analysis   </center>
+pagetitle: 
+author: <center> İsmail Kaan Özer 22002672, Görkem Kadir Solun </center>
+always_allow_html: true
+linkcolor: red
+output: 
+  bookdown::html_document2:
+    theme: readable
+    number_sections: false
+    code_folding: "hide"
+    toc: true
+  bookdown::pdf_document2:
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RSQLite)
+library(DBI)
+library(tidyverse)
+
+con <- dbConnect(SQLite(),"C:/Users/Kaan/Desktop/spring24/ge461/Project1/data/dodgers.sqlite")
+dbListTables(con)
+
+tbl(con, "events") %>% 
+  collect() %>% 
+  mutate(day_of_week = factor(day_of_week, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
+         month = factor(month, levels = c("APR","MAY","JUN","JUL","AUG","SEP","OCT"))) %>% 
+  mutate_if(is.character, factor) %>% 
+  mutate(temp = round((temp- 32)*5/9)) -> events
+  
+```
+
