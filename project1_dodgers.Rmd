@@ -20,7 +20,7 @@ library(RSQLite)
 library(DBI)
 library(tidyverse)
 
-con <- dbConnect(SQLite(),"C:/Users/Kaan/Desktop/spring24/ge461/Project1/data/dodgers.sqlite")
+con <- dbConnect(SQLite(),"data/dodgers.sqlite")
 dbListTables(con)
 
 tbl(con, "events") %>% 
