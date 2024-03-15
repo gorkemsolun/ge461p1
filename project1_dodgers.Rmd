@@ -32,3 +32,21 @@ tbl(con, "events") %>%
   
 ```
 
+# Introduction
+
+Los Angeles Dodgers Baseball team gathered data of their 81 games to analyze. Objective is increasing the attendance to the matches.  Temperature and Attendance variables are quantitative while all others are qualitative. Specific analysis target is measuring the effects of all variables on attendance variable. Below is the summary of the data set.
+
+```{r}
+summary(events)
+```
+
+
+```{r}
+lm1 <- lm(attend ~ ., events)
+summary(lm1)
+```
+
+
+```{r}
+anova(lm1)
+```
