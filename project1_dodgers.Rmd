@@ -1,7 +1,7 @@
 ---
 title: <center> <h2> Spring 2024 - GE 461 Introduction to Data Science</h2> Dodgers Exploratory Data Analysis   </center>
 pagetitle: 
-author: <center> İsmail Kaan Özer 22002672, Görkem Kadir Solun </center>
+author: <center> İsmail Kaan Özer 22002672, Görkem Kadir Solun 22003214</center>
 always_allow_html: true
 linkcolor: red
 output: 
@@ -40,6 +40,129 @@ Los Angeles Dodgers Baseball team gathered data of their 81 games to analyze. Ob
 summary(events)
 ```
 
+# Visualizing and Evaluating Different Variables
+
+In order to observe whether different variables increase attendance, Chi-squared tests and Welch’s Two Sample t-tests was conducted on variables and attendance. 
+
+## Booblehead
+
+Firstly, we need to visualize the attendance with booblehead promotion existence, then we can decide whether there was a correlation between the attendance and boblehead promotions.
+
+```{r}
+events %>% 
+  ggplot(aes(bobblehead, attend)) +
+  geom_boxplot()
+```
+
+Graph suggests that there is a difference. However, to be sure, Welch Two Sample t-test conducted between attendance and booblehead promotions.
+
+```{r}
+t.test(x=events$attend[events$bobblehead=="YES"], y=events$attend[events$bobblehead=="NO"])
+```
+
+A statistical test (t-test) was done, and the results strongly suggest that bobblehead promotions have a positive impact on attendance. The test showed a clear connection between promotions and higher attendance numbers. We are 95% confident that bobblehead promotions increase attendance by somewhere between 11,500 and 16,500 people per event.
+
+A Chi-squared test also conducted to check whether there is a connection between between booblehead promotions and higher attendance numbers.
+
+```{r}
+events %>% 
+  group_by(bobblehead) %>% 
+  summarize(avgattend = mean(attend)) %>% 
+  pull(avgattend) %>% chisq.test()
+```
+Similar to previous test, the results strongly suggest that bobblehead promotions have a positive impact on attendance. The test showed a clear connection between promotions and higher attendance numbers. Our p-value is near zero meaning we are confident that bobblehead promotions increase attendance.
+
+## Fireworks
+
+Same as booblehead, firstly, we need to visualize the attendance with fireworks existence, then we can decide whether there was a correlation between the attendance and fireworks.
+
+```{r}
+events %>% 
+  ggplot(aes(fireworks, attend)) +
+  geom_boxplot()
+```
+
+In contrast to booblehead, graph suggests that there is no difference. However, to be sure, Welch Two Sample t-test conducted between attendance and fireworks.
+
+```{r}
+t.test(x=events$attend[events$fireworks=="YES"], y=events$attend[events$fireworks=="NO"])
+```
+
+A statistical test (t-test) was done, and the results suggest that fireworks have little to no impact on attendance. It is seen that there is enough evidence to conclude that there isn’t a relation between attendance and fireworks considering the p-value of test is almost 1. The test showed a no connection between fireworks and higher attendance numbers.
+
+To be sure, a Chi-squared test also conducted to check whether there is a connection between between fireworks and higher attendance numbers.
+
+```{r}
+events %>% 
+  group_by(fireworks) %>% 
+  summarize(avgattend = mean(attend)) %>% 
+  pull(avgattend) %>% chisq.test()
+```
+
+Similar to previous test, the results suggest that bobblehead promotions have little to no impact on attendance. The test showed not a clear connection between fireworks and higher attendance numbers. Our p-value is near one meaning we are confident that fireworks not related to attendance.
+
+## Shirt
+
+Firstly, we need to visualize the attendance with shirt promotion existence, then we can decide whether there was a correlation between the attendance and shirt promotions.
+
+```{r}
+events %>% 
+  ggplot(aes(shirt, attend)) +
+  geom_boxplot()
+```
+
+Graph suggests that there is a difference. However, again, to be sure, Welch Two Sample t-test conducted between attendance and shirt promotions.
+
+```{r}
+t.test(x=events$attend[events$shirt=="YES"], y=events$attend[events$shirt=="NO"])
+```
+
+A statistical test (t-test) was done, and the results suggest that shirt promotions have no clear impact on attendance as p-value is higher than 0.05 so we accept the null and conclude that there is a not much difference. The test showed a no concise connection between shirt promotions and higher attendance numbers.
+
+A Chi-squared test also conducted to check whether there is a connection between between shirt promotions and higher attendance numbers.
+
+```{r}
+events %>% 
+  group_by(shirt) %>% 
+  summarize(avgattend = mean(attend)) %>% 
+  pull(avgattend) %>% chisq.test()
+```
+In contrast to previous test, the results strongly suggest that shirt promotions have a positive impact on attendance. The test showed a connection between shirt promotions and higher attendance numbers. Our p-value is near zero meaning we are confident that shirt promotions increase attendance.
+
+Even though the two p-values appear contradictory, they reveal different aspects of data:
+
+- The t-test suggests that those who got a shirt and those who didn't might have similar average attendance levels.
+- However, the Chi-squared test reveals that there's an important relationship between attendance and receiving a shirt. This might mean that people with higher attendance have a higher chance of getting a shirt, even if the mean differences are subtle.
+
+Therefore, we will be considering shirts relation in attendance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 lm1 <- lm(attend ~ ., events)
@@ -50,3 +173,8 @@ summary(lm1)
 ```{r}
 anova(lm1)
 ```
+
+```{r}
+dbDisconnect(con)
+```
+
