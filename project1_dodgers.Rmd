@@ -20,7 +20,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(RSQLite)
 library(DBI)
 library(tidyverse)
-library(car)
 library(pander)
 
 con <- dbConnect(SQLite(),"data/dodgers.sqlite")
@@ -69,7 +68,7 @@ events %>%
   summarize(avgattend = mean(attend)) %>% 
   pull(avgattend) %>% chisq.test()
 ```
-Our p-value is near zero, so we can say that bobblehead promotions will increase attendance. Similar to the previous test, the results strongly suggest that bobblehead promotions positively impact attendance. The test showed a clear connection between promotions and attendance numbers.
+Our p-value is near zero, so we can say that bobblehead promotions will increase attendance. The results strongly suggest that bobblehead promotions positively impact attendance. The test showed a clear connection between promotions and attendance numbers.
 
 We can also see how many fans are expected to attend by a bobblehead promotion.
 
@@ -237,7 +236,7 @@ events %>%
   geom_smooth(se=FALSE)
 ```
 
-The graphs suggests a difference, particularly around 22-23 degrees. We can see higher averages of attendance. Therefore, we will consider temperature relations in attendance.
+The graphs suggests a difference, particularly around 23-24 degrees. We can see higher averages of attendance. Therefore, we will consider temperature relations in attendance.
 
 ### Temperature with other variables
 
@@ -334,7 +333,7 @@ pander(caption = "Number of games across months")
 
 May hosted the most significant number of games, while October the least. June has as much as half of the games in May. The remainder of the months have high and similar game numbers.
 
-This heatmap shows total attendance versus weekday and month. The colors change from bright yellow to dark red as attendance increases. Default heatmap shuffles rows and columns to bring together weekdays and months with similar attendance. Here, we see May, Aug, and Jul together within the months and Saturday, Friday, and Sunday within the weekdays.
+Total attendance is plotted against weekday and month in this heatmap. As more people show up, the hues shift from brilliant yellow to dark red. The default heatmap groups weeks and months with comparable attendance by rearranging the rows and columns. Here, we have Saturday, Friday, and Sunday in the weekdays and May, August, and July all together in the months.
 
 ```{r}
 xtabs(attend ~ day_of_week + month, events) %>% 
@@ -397,19 +396,16 @@ Therefore, we will not consider opponents relations in attendance.
 
 # Final Model and Validating
 
-We need to examine which criteria in the dataset affected attendance to ensure that variables do not coincide with other factors in a way that could skew this test. To achieve this, a multiple regression model was developed that included all criteria and removed them one at a time until the results stopped improving. The model was trained using a random selection of 85% of the dataset; the remaining games were utilized to assess the accuracy of the predictions.
+In order to make sure that variables do not coincide with other factors in a way that might misguide this test, we need to look at which variables in the dataset affected attendance. This was accomplished by using a multiple regression model that had all the variables and some of them eliminated. A random selection of 85% of the dataset was used to train the model, and the remaining games were used to evaluate how accurate the predictions were.
 
 ```{r}
 set.seed(666)
 sampleSize <- floor(0.85 * nrow(events))
-
-train_ind <- sample(seq_len(nrow(events)), size = sampleSize)
-
-train <- events[train_ind, ]
-test <- events[-train_ind, ]
+trainIndex <- sample(seq_len(nrow(events)), size = sampleSize)
+train <- events[trainIndex, ]
+test <- events[-trainIndex, ]
 
 model <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = train)
-
 summary(model)
 ```
 
@@ -463,7 +459,7 @@ model <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + ski
 plot(model)
 ```
 
-Our final models plot. We can see diagnostics of our final model here.
+Our final models plot. We can see diagnostics of our final model below.
 
 ```{r}
 final <- lm(formula = attend ~ month + day + day_of_week 
@@ -487,7 +483,7 @@ Interpretations of the comparison
 - The final Scale-Location plot indicates a relatively equal spread of residuals across all fitted values, satisfying homoscedasticity.
 - The final Cook's Distance values are less than 0.5. Hence there are no influential points based on this criteria.
 
-Fitted value plots of our previous model
+Fitted value plot of our previous model
 
 ```{r}
 events %>% 
@@ -498,7 +494,7 @@ events %>%
   geom_smooth(se=FALSE)
 ```
 
-Fitted value plots of our final model
+Fitted value plot of our final model
 
 ```{r}
 events %>% 
