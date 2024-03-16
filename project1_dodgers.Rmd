@@ -105,7 +105,7 @@ events %>%
   pull(avgattend) %>% chisq.test()
 ```
 
-Similar to the previous test, the results suggest that bobblehead promotions have little to no impact on attendance. The test showed no apparent connection between fireworks and attendance numbers. Our p-value is near one, meaning we are confident that fireworks are unrelated to attendance.
+Similar to the previous test, the results suggest that firework shows have little to no impact on attendance. The test showed no apparent connection between fireworks and attendance numbers. Our p-value is near one, meaning we are confident that fireworks are unrelated to attendance.
 
 ## Shirt
 
@@ -117,7 +117,7 @@ events %>%
   geom_boxplot()
 ```
 
-The graph suggests that there is a difference. However, again, to be sure, a Chi-squared test was also conducted to check whether there is a connection between shirt promotions and attendance numbers.
+The graph very strongly suggests that there is a difference. However, again, to be sure, a Chi-squared test was also conducted to check whether there is a connection between shirt promotions and attendance numbers.
 
 ```{r}
 events %>% 
@@ -147,8 +147,13 @@ The graph suggests that there is a very small difference. However, again, to be 
 t.test(x=events$attend[events$cap=='YES'],
        y=events$attend[events$cap=='NO'])
 ```
-The results suggest that cap promotions have a near to zero impact on attendance. The test showed a disconnection between cap promotions and attendance numbers. Our p-value is more than 0.05, so we are confident that cap promotions is not related to attendance.
+The results suggest that cap promotions have a near to zero impact on attendance. The test showed a disconnection between cap promotions and attendance numbers. Our p-value is more than 0.05, so we are confident that cap promotions is not related to attendance. To make completely sure, anova test is applied.
 
+```{r}
+model_wout_cap <- lm(attend ~ month + day + day_of_week + opponent + temp + skies + day_night + shirt +  fireworks + bobblehead, data = events)
+anova(lm1, model_wout_cap)
+```
+Since p-value is higher than 0.05, we are sure that cap promotions are not related to attendance.
 Therefore, we will not consider cap relations in attendance.
 
 ## Day and Night
@@ -167,8 +172,13 @@ The graph suggests that there is very small to no difference. However, again, to
 t.test(x=events$attend[events$day_night=='Day'],
        y=events$attend[events$day_night=='Night'])
 ```
-Like the graph, the results suggest that being day or night has no apparent impact on attendance. The test showed a disconnection between being day or night and attendance numbers. Our p-value is more than 0.05, meaning we are confident that being day or night is not related to attendance.
+Like the graph, the results suggest that being day or night has no apparent impact on attendance. The test showed a disconnection between being day or night and attendance numbers. Our p-value is more than 0.05, meaning we are confident that being day or night is not related to attendance. Lastly, anova test is applied.
 
+```{r}
+model_wout_time <- lm(attend ~ month + day + day_of_week + opponent + temp + skies + shirt + cap +  fireworks + bobblehead, data = events)
+anova(lm1, model_wout_time)
+```
+Anova test result suggests that time that game is played does not have a relation with attendance because p value is greater than 0.05.
 Therefore, we will not consider day and night relations in attendance.
 
 ## Skies
@@ -198,9 +208,14 @@ t.test(x=events$attend[events$skies=='Clear'],
        y=events$attend[events$skies=='Cloudy'])
 ```
 
-In contrast to the Chi-squared test, the results suggest that skies have a low impact on attendance. The test showed a disconnection between sky and attendance numbers. Our p-value is more than 0.05, which means we are confident that sky is unrelated to attendance.
+In contrast to the Chi-squared test, the results suggest that skies have a low impact on attendance. The test showed a disconnection between sky and attendance numbers. Our p-value is more than 0.05, which means we are not totally confident that sky is related or unrelated to attendance. We can be sure after applying F-test.
 
-Therefore, we will consider skies relations in attendance.
+```{r}
+model_wout_skies <- lm(attend ~ month + day + day_of_week + opponent + temp + day_night + cap + shirt + fireworks + bobblehead, data = events)
+anova(lm1, model_wout_bobblehead)
+```
+F test's p value is very close to 1. This result means that two models are not significantly different. So, skies is not an important variable.
+Therefore, we will not consider skies relations in attendance.
 
 ## Temperature
 
@@ -294,8 +309,12 @@ xtabs(attend ~ day_of_week + month, events) %>%
   heatmap()
 ```
 
-The heatmap suggests a difference. For example, attendance is low in October, and we can see there is higher attendance on Monday, Tuesday, and Wednesday in July. Still, on other days, attendance is low. Therefore, we will consider dates, months, and days relations in attendance.
+The heatmap suggests a difference. For example, attendance is low in October, and we can see there is higher attendance on Monday, Tuesday, and Wednesday in July. Still, on other days, attendance is low. Therefore, we will consider dates, months, and days relations in attendance. We can use one-way anova test to double check.
 
+```{r}
+anova(lm1)
+```
+P-values of both month and day_of_week suggests that they are important.
 We can also draw a graph to see how attendance varies across the days of the week.
 
 ```{r}
@@ -304,7 +323,13 @@ events %>%
   geom_boxplot()
 ```
 
-Here, we can see that we see a higher average on Tuesdays and a lower average on Mondays.
+Here, we can see that we see a higher average on Tuesdays and a lower average on Mondays. It can be seen in summary of our model with all variables.
+
+```{r}
+lm1 <- lm(attend ~ ., events)
+summary(lm1)
+```
+Only day_of_weekTuesday's p-value is less than the wanted level. 
 
 ## Opponents
 
@@ -324,9 +349,18 @@ events %>%
   summarize(avgattend = mean(attend)) %>% 
   pull(avgattend) %>% chisq.test()
 ```
-Same as the graph, the results suggest that opponents have a impact on attendance. The test showed a connection between opponents and attendance numbers. Our p-value is near zero meaning we are confident that opponent is related to attendance.
+Same as the graph, the results suggest that opponents have a impact on attendance. The test showed a connection between opponents and attendance numbers. Our p-value is near zero meaning we are confident that opponent is related to attendance. We should check other tests.
 
-Therefore, we will consider opponents relations in attendance.
+```{r}
+model_wout_opponent <- lm(attend ~ month + day + day_of_week + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = events)
+anova(lm1, model_wout_opponent)
+```
+Contrary to graph and chi-sq test, anova test suggests that oppenents is not an important variable.
+```{r}
+summary(lm1)
+```
+As it is seen in summary, there is not any opponent row that suggests opponents is an important variable.
+Therefore, we will not consider opponents relations in attendance.
 
 # Linear Regression Model and Validating
 
