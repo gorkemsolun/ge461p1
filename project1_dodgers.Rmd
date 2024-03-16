@@ -277,7 +277,24 @@ events %>%
   geom_jitter(aes(col = bobblehead)) +
   geom_smooth(se = FALSE)
 ```
+As an another analysis for temp variable, we got a hint from the plot: our shape looks like a -x^2 line. We can play with it to make it more related. Below is the different lines for temp and BIC values of them.
 
+```{r}
+model1<-lm(attend~temp,events)
+model2 <- lm(attend~I(temp^2),events)
+model3 <- lm(attend~I(temp^2) + I(temp^3),events)
+model4 <- lm(attend~I(temp^2) + I(temp^3)+I(temp^4),events)
+model5<- lm(attend~poly(temp,2),events)
+model6<- lm(attend~poly(temp,3),events)
+model7<- lm(attend~poly(temp,4),events)
+BIC(model1,model2,model3,model4,model5, model6,model7)
+```
+model5 has the least BIC value, which is temp^2. Let's test that model.
+```{r}
+summary(model5)
+```
+As you can see, p-value is less than the indicated level. Now, temp is related to attendance rate. 
+Therefore, we will consider poly(temp,2) in attendance.
 
 ## Days and Month
 
