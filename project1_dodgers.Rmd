@@ -43,9 +43,13 @@ summary(events)
 
 # Visualizing and Evaluating Different Variables
 
-To observe whether different variables increase attendance, Chi-squared tests and Welch’s Two Sample t-tests were conducted on variables and attendance. 
+To observe whether different variables increase attendance, Chi-squared tests and Welch’s Two Sample t-tests were conducted on variables and attendance. To make sure of the result of analysis, we define a linear regression model with all variables to compare with different models afterwards.
 
-## Booblehead
+```{r}
+lm1 <- lm(attend ~ ., events)
+```
+
+## Bobblehead
 
 Firstly, we need to visualize the attendance with bobblehead promotion existence; then, we can decide whether there was a correlation between the attendance and bobblehead promotions.
 
@@ -63,7 +67,15 @@ events %>%
   summarize(avgattend = mean(attend)) %>% 
   pull(avgattend) %>% chisq.test()
 ```
-Similar to the previous test, the results strongly suggest that bobblehead promotions positively impact attendance. The test showed a clear connection between promotions and attendance numbers. Our p-value is near zero, so we are confident that bobblehead promotions will increase attendance.
+Our p-value is near zero, so we can say that bobblehead promotions will increase attendance. Similar to the previous test, the results strongly suggest that bobblehead promotions positively impact attendance. The test showed a clear connection between promotions and attendance numbers.
+
+Lastly, we define a linear regression model without bobblehead variable and apply F-test to fully understand that bobblehead is important.
+
+```{r}
+model_wout_bobblehead <- lm(attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks, data = events)
+anova(lm1, model_wout_bobblehead)
+```
+p-value resulted less than 0.01: A low p-value suggests that there is a significant difference between the two models because null hypothesis suggests that there is no difference. Since there is a significant difference between two models, we can not ignore bobblehead variable because it is important for our model. Now, we are sure that bobblehead promotions increase the attendance.
 
 ## Fireworks
 
