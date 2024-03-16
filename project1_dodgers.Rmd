@@ -314,6 +314,22 @@ Therefore, we will consider opponents relations in attendance.
 
 # Linear Regression Model and Validating
 
+First, we regress attendance on month, day of the week, and boblehead.
+
+```{r}
+model <- lm(attend ~ month + day_of_week + bobblehead, data = events)
+summary(model)
+```
+
+We test the null hypothesis, "Giving bobblehead has no effect on attendance," in the summary table along the lines of the bobbleheadYES. If the p-value on the same line is significant (> 0.05), then the null and the data are consistent. We reject the null if the p-value is small because the data contradicts the null. We reject the null since the p-value is very small. Consequently, we draw the conclusion that bobbleheads have an impact on attendance, although a favorable one given the estimate's positive value of 10714.90. On average, we anticipate a 10715 rise in attendance.
+
+Plotting our model
+
+```{r}
+plot(model)
+```
+
+
 Again, we need look at which criteria in the dataset affected attendance to make sure that variables do not coincide with other factors in a way that could skew this test. To do this, a multiple regression model was developed that included all criteria and removed them one at a time until the results stopped getting better. The model was trained using a random selection of 80% of the dataset; the remaining games were utilized to assess the accuracy of the predictions.
 
 ```{r}
@@ -325,17 +341,19 @@ train_ind <- sample(seq_len(nrow(events)), size = smp_size)
 train <- events[train_ind, ]
 test <- events[-train_ind, ]
 
-model <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = events)
+model1 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = events)
 
-model %>% summary()
+summary(model1)
 
-#plot(model) # I don't know whether this is useful or not. fireworks and month
+#plot(model1) # I don't know whether this is useful or not. fireworks and month
 ```
+
+In the summary table, on the lines of bobbleheadYES, we test the null hypothesis: “Giving bobblehead has no effect on attendance”. Null and data are consistent if p-value on the same line is large (> 0.05). If p-value is small, then data contradicts with the null, and therefore we reject the null. Since p-value = 0.0000359 is indeed small we reject the null. So we conclude that bobblehead can affect the attendance (in the positive direction because the estimate has positive value 10714.90). We expect the attendance to increase by 10715 on average.
 
 The model is tested and are compared using the Mean Absolute Error. A train sample and a test sample were randomly selected from the dataset using the same seed, ensuring consistency across all model tests.
 
 ```{r}
-prediction <- predict(model,test)
+prediction <- predict(model1,test)
 
 mean(abs(prediction-test$attend))
 ```
