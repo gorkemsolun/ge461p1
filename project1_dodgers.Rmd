@@ -317,46 +317,175 @@ Therefore, we will consider opponents relations in attendance.
 First, we regress attendance on month, day of the week, and boblehead.
 
 ```{r}
-model <- lm(attend ~ month + day_of_week + bobblehead, data = events)
-summary(model)
+model1 <- lm(attend ~ month + day_of_week + bobblehead, data = events)
+summary(model1)
 ```
 
 We test the null hypothesis, "Giving bobblehead has no effect on attendance," in the summary table along the lines of the bobbleheadYES. If the p-value on the same line is significant (> 0.05), then the null and the data are consistent. We reject the null if the p-value is small because the data contradicts the null. We reject the null since the p-value is very small. Consequently, we draw the conclusion that bobbleheads have an impact on attendance, although a favorable one given the estimate's positive value of 10714.90. On average, we anticipate a 10715 rise in attendance.
 
+The F-statistics p-value is less than 0.05, and then there is a relation between attendance and predictors.
+
 Plotting our model
 
 ```{r}
-plot(model)
+plot(model1)
 ```
 
 
-Again, we need look at which criteria in the dataset affected attendance to make sure that variables do not coincide with other factors in a way that could skew this test. To do this, a multiple regression model was developed that included all criteria and removed them one at a time until the results stopped getting better. The model was trained using a random selection of 80% of the dataset; the remaining games were utilized to assess the accuracy of the predictions.
+Again, we need look at which criteria in the dataset affected attendance to make sure that variables do not coincide with other factors in a way that could skew this test. To do this, a multiple regression model was developed that included all criteria and removed them one at a time until the results stopped getting better. The model was trained using a random selection of 85% of the dataset; the remaining games were utilized to assess the accuracy of the predictions.
 
 ```{r}
 set.seed(666)
-smp_size <- floor(0.80 * nrow(events))
+smp_size <- floor(0.85 * nrow(events))
 
 train_ind <- sample(seq_len(nrow(events)), size = smp_size)
 
 train <- events[train_ind, ]
 test <- events[-train_ind, ]
 
-model1 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = events)
+model <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = train)
 
-summary(model1)
+summary(model)
 
 #plot(model1) # I don't know whether this is useful or not. fireworks and month
 ```
 
-In the summary table, on the lines of bobbleheadYES, we test the null hypothesis: “Giving bobblehead has no effect on attendance”. Null and data are consistent if p-value on the same line is large (> 0.05). If p-value is small, then data contradicts with the null, and therefore we reject the null. Since p-value = 0.0000359 is indeed small we reject the null. So we conclude that bobblehead can affect the attendance (in the positive direction because the estimate has positive value 10714.90). We expect the attendance to increase by 10715 on average.
+We test the null hypothesis, "Giving bobblehead has no effect on attendance," in the summary table along the lines of the bobbleheadYES. If the p-value on the same line is significant (> 0.05), then the null and the data are consistent. We reject the null if the p-value is small because the data contradicts the null. We reject the null since the p-value is very small. Consequently, we draw the conclusion that bobbleheads have an impact on attendance, although a favorable one given the estimate's positive. On average, we anticipate a rise in attendance.
+
+The F-statistics p-value is less than 0.05, and then there is a relation between attendance and predictors.
 
 The model is tested and are compared using the Mean Absolute Error. A train sample and a test sample were randomly selected from the dataset using the same seed, ensuring consistency across all model tests.
 
 ```{r}
-prediction <- predict(model1,test)
+prediction <- predict(model,test)
 
 mean(abs(prediction-test$attend))
 ```
+
+Welch Two Sample t-tests between some of the requirements and attendance were conducted after running the first model to check whether there is a correlation between the two in order to expedite the criteria removal process. The accuracy of the model should theoretically increase if a criterion is eliminated if it does not correspond with attendance.
+
+## Day or Night
+
+The first thing to be checked was attendance and if the match was taking place during the day or night.
+
+```{r}
+t.test(x=events$attend[events$day_night=='Day'],
+       y=events$attend[events$day_night=='Night'])
+```
+
+At a significance level of 0.05, the test appears to indicate that there is no correlation between the game's time of day and attendance.
+
+```{r}
+model2 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies #+ day_night
+             + cap + shirt + fireworks + bobblehead, data = train)
+
+prediction2 <- predict(model2,test)
+
+mean(abs(prediction2-test$attend))
+```
+
+We also see a drop in the MAE of the predictions when the day/night criteria are removed from the initial regression model.
+
+## Shirt
+
+We also tested shirt promotions.
+
+```{r}
+t.test(x=events$attend[events$shirt=='YES'],
+       y=events$attend[events$shirt=='NO'])
+```
+
+```{r}
+model3 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies #+ day_night
+             + cap #+ shirt
+             + fireworks + bobblehead, data = train)
+
+prediction3 <- predict(model3,test)
+
+mean(abs(prediction3-test$attend))
+```
+We can see a drop but it is very small so, it may be related.
+
+## Caps
+
+We also tested cap promotions.
+
+```{r}
+t.test(x=events$attend[events$cap=='YES'],
+       y=events$attend[events$cap=='NO'])
+```
+
+```{r}
+model4 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies 
+             #+ day_night + cap + shirt
+             + fireworks + bobblehead, data = train)
+
+prediction4 <- predict(model4,test)
+
+mean(abs(prediction4-test$attend))
+```
+We can see a drop.
+
+## Skies
+
+We also tested skies.
+
+```{r}
+t.test(x=events$attend[events$skies=='Cloudy'],
+       y=events$attend[events$skies=='Clear'])
+```
+
+```{r}
+model5 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp 
+             #+ skies + day_night + cap + shirt
+             + fireworks + bobblehead, data = train)
+
+prediction5 <- predict(model5,test)
+
+mean(abs(prediction5-test$attend))
+```
+
+It is found that eliminating uncorrelated criteria from the model lowers the MAE, indicating a higher level of accuracy for the model until skies. The sky requirements, however, defy this reasoning. This time we see a rise so we should include skies.
+
+## Fireworks
+
+We also tested fireworks.
+
+```{r}
+t.test(x=events$attend[events$fireworks=='NO'],
+       y=events$attend[events$fireworks=='YES'])
+```
+
+There is little chance that the presence of fireworks will affect attendance, as indicated by the p-value of 0.98.
+
+```{r}
+model6 <- lm(formula = attend ~ month + day + day_of_week + opponent + temp 
+             + skies #+ day_night + cap + shirt + fireworks
+             + bobblehead, data = train)
+
+prediction6 <- predict(model6,test)
+
+mean(abs(prediction6-test$attend))
+```
+
+In contrast to t-test and similar to skies, this time we see a rise so we should include fireworks.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
