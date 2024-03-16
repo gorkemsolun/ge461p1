@@ -182,13 +182,13 @@ events %>%
   summarize(avgattend = mean(attend)) %>% 
   pull(avgattend) %>% chisq.test()
 ```
-In contrast to the graph, the results suggest that being skies have a impact on attendance. The test showed a connection between sky and attendance numbers. Our p-value is near zero meaning we are confident that sky is related to attendance.
+In contrast to the graph, the results suggest that skies have a impact on attendance. The test showed a connection between sky and attendance numbers. Our p-value is near zero meaning we are confident that sky is related to attendance.
 
 Therefore, we will consider skies relations in attendance.
 
 ## Temperature
 
-Firstly, we need to visualize the attendance with skies; then, we can decide whether there was a correlation between the attendance and sky.
+Firstly, we need to visualize the attendance with temperature; then, we can decide whether there was a correlation between the attendance and temperature.
 
 ```{r}
 events %>% 
@@ -197,7 +197,56 @@ events %>%
   geom_smooth(se=FALSE)
 ```
 
-The graph suggests a difference, particularly around 22-23 degrees. We can see higher averages of attendance. Therefore, we will consider skies relations in attendance.
+The graphs suggests a difference, particularly around 22-23 degrees. We can see higher averages of attendance. Therefore, we will consider temperature relations in attendance.
+
+### Temperature with other variables
+
+```{r}
+events %>% 
+  ggplot(aes(temp, attend)) +
+  geom_jitter(aes(col = opponent)) +
+  geom_text(aes(label = str_sub(opponent, 1,4), col = opponent)) +
+  geom_smooth(se = FALSE)
+```
+Here, we displayed the opponents, temperature, and attendance. Many variances exist, so we should explore this further by considering these variables.
+
+```{r}
+events %>% 
+  ggplot(aes(temp, attend)) +
+  geom_jitter(aes(col = bobblehead)) +
+  geom_smooth(se = FALSE)
+```
+
+
+Here, we can see how the day and night temperature varies through the months.
+
+```{r}
+events %>% 
+  ggplot(aes(temp, attend)) +
+  geom_jitter(aes(col = day_of_week)) +
+  geom_text(aes(label = str_sub(day_of_week, 1,3), col = day_of_week)) +
+  geom_smooth(se = FALSE)
+```
+
+Temperature and days of the week of the games played against attendance.
+
+```{r}
+events %>% 
+  ggplot(aes(temp, attend)) +
+  geom_jitter(aes(col = month)) +
+  geom_text(aes(label = str_sub(month, 1,3), col = month)) +
+  geom_smooth(se = FALSE)
+```
+
+Temperature and months of the games played against attendance.
+
+```{r}
+events %>% 
+  ggplot(aes(temp, attend)) +
+  geom_jitter(aes(col = bobblehead)) +
+  geom_smooth(se = FALSE)
+```
+
 
 ## Days and Month
 
@@ -241,11 +290,55 @@ events %>%
 
 Here, we can see that we see a higher average on Tuesdays and a lower average on Mondays.
 
+## Opponents
 
-# Linear Regression Model
+Firstly, we need to visualize the attendance with opponents; then, we can decide whether there was a correlation between the attendance and opponents.
 
+```{r}
+events %>% 
+  ggplot(aes(opponent, attend)) +
+  geom_boxplot()
+```
 
+The graph suggests that there is difference. However, again, to be sure, a Chi-squared test was conducted to check whether there is a connection between opponents and attendance numbers.
 
+```{r}
+events %>% 
+  group_by(opponent) %>% 
+  summarize(avgattend = mean(attend)) %>% 
+  pull(avgattend) %>% chisq.test()
+```
+Same as the graph, the results suggest that opponents have a impact on attendance. The test showed a connection between opponents and attendance numbers. Our p-value is near zero meaning we are confident that opponent is related to attendance.
+
+Therefore, we will consider opponents relations in attendance.
+
+# Linear Regression Model and Validating
+
+Again, we need look at which criteria in the dataset affected attendance to make sure that variables do not coincide with other factors in a way that could skew this test. To do this, a multiple regression model was developed that included all criteria and removed them one at a time until the results stopped getting better. The model was trained using a random selection of 80% of the dataset; the remaining games were utilized to assess the accuracy of the predictions.
+
+```{r}
+set.seed(666)
+smp_size <- floor(0.80 * nrow(events))
+
+train_ind <- sample(seq_len(nrow(events)), size = smp_size)
+
+train <- events[train_ind, ]
+test <- events[-train_ind, ]
+
+model <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = events)
+
+model %>% summary()
+
+#plot(model) # I don't know whether this is useful or not. fireworks and month
+```
+
+The model is tested and are compared using the Mean Absolute Error. A train sample and a test sample were randomly selected from the dataset using the same seed, ensuring consistency across all model tests.
+
+```{r}
+prediction <- predict(model,test)
+
+mean(abs(prediction-test$attend))
+```
 
 
 
