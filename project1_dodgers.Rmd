@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(RSQLite)
 library(DBI)
 library(tidyverse)
+library(car)
 library(pander)
 
 con <- dbConnect(SQLite(),"data/dodgers.sqlite")
@@ -480,12 +481,85 @@ mean(abs(prediction6-test$attend))
 
 In contrast to t-test and similar to skies, this time we see a rise so we should include fireworks.
 
+## Final Model
+
+By removing our unrelated values, we get a final model.
+
+TODO: WE MAY NEED TO DİSCUSS OUR PReVİOUS REULTS HERE AND SAY WHAT İS ADDED
 
 
+```{r}
+final <- lm(formula = attend ~ month + day + day_of_week 
+             #+ opponent 
+             + temp 
+             #+ skies + day_night + cap 
+             + shirt
+             #+ fireworks
+             + bobblehead, data = train)
 
+summary(final)
+```
 
+The final model yields the best result. Looking at the p-values, we can see here bobblehead has a positive effect. 
 
+The Mean Absolute Error calculation.
 
+```{r}
+finalprediction <- predict(final,test)
+
+mean(abs(finalprediction-test$attend))
+```
+
+Our models prediction is better cansidering the MAE calculation.
+
+Bar plot of the final model prediction.
+
+```{r}
+barplot(finalprediction-test$attend,col='red')
+```
+
+Our final models plot. We can see diagnostics of our final model here.
+
+```{r}
+final <- lm(formula = attend ~ month + day + day_of_week 
+             #+ opponent 
+             + temp 
+             #+ skies + day_night + cap 
+             + shirt
+             #+ fireworks
+             + bobblehead, data = events)
+
+plot(final)
+```
+
+```{r}
+events %>% 
+  mutate(fitted = fitted(final)) %>% 
+  ggplot(aes(fitted, attend)) +
+  geom_point() +
+  geom_abline() +
+  geom_smooth(se=FALSE)
+```
+
+Checking the multicollinearity.
+
+```{r}
+vif(final)
+```
+
+A common guideline is that a VIF above 5 suggests potential issues with multicollinearity. Our model has less than 5.
+
+Given a 90% confidence interval, these many fans are expected to be drawn alone by a bobblehead promotion.
+
+```{r}
+confint(final, level = 0.90)["bobbleheadYES",]
+```
+
+```{r}
+coef(final)["bobbleheadYES"]
+```
+
+With the best multiple regression model to predict attendance, including bobblehead promotions, we can see that bobblehead promotions contribute positively to the games' attendance, considering the tests conducted earlier.
 
 
 
