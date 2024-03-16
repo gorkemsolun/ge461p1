@@ -44,7 +44,7 @@ summary(events)
 
 # Visualizing and Evaluating Different Variables
 
-To observe whether different variables increase attendance, Chi-squared tests and Welch’s Two Sample t-tests were conducted on variables and attendance. To make sure of the result of analysis, we define a linear regression model with all variables to compare with different models afterwards.
+To observe whether different variables increase attendance, Chi-squared tests, f-tests, and Welch’s Two Sample t-tests were conducted on variables and attendance. To make sure of the result of analysis, we define a linear regression model with all variables to compare with different models afterwards.
 
 ```{r}
 lm1 <- lm(attend ~ ., events)
@@ -212,7 +212,7 @@ In contrast to the Chi-squared test, the results suggest that skies have a low i
 
 ```{r}
 model_wout_skies <- lm(attend ~ month + day + day_of_week + opponent + temp + day_night + cap + shirt + fireworks + bobblehead, data = events)
-anova(lm1, model_wout_bobblehead)
+anova(lm1, model_wout_skies)
 ```
 F test's p value is very close to 1. This result means that two models are not significantly different. So, skies is not an important variable.
 Therefore, we will not consider skies relations in attendance.
@@ -239,6 +239,7 @@ events %>%
   geom_text(aes(label = str_sub(opponent, 1,4), col = opponent)) +
   geom_smooth(se = FALSE)
 ```
+
 Here, we displayed the opponents, temperature, and attendance. Many variances exist, so we should explore this further by considering these variables.
 
 ```{r}
@@ -247,7 +248,6 @@ events %>%
   geom_jitter(aes(col = bobblehead)) +
   geom_smooth(se = FALSE)
 ```
-
 
 Here, we can see how the day and night temperature varies through the months.
 
@@ -290,6 +290,7 @@ count(day_of_week, name = "Number of games") %>%
 rename(`Week day`= day_of_week) %>%
 pander(caption = "Number of games on week days")
 ```
+
 The games were played uniformly every weekday except Thursday, which has less than other days. 
 
 ```{r}
@@ -300,6 +301,7 @@ rename(`Month`= month) %>%
 pander(caption = "Number of games across months")
 
 ```
+
 May hosted the most significant number of games, while October the least. June has as much as half of the games in May. The remainder of the months have high and similar game numbers.
 
 This heatmap shows total attendance versus weekday and month. The colors change from bright yellow to dark red as attendance increases. Default heatmap shuffles rows and columns to bring together weekdays and months with similar attendance. Here, we see May, Aug, and Jul together within the months and Saturday, Friday, and Sunday within the weekdays.
@@ -329,7 +331,8 @@ Here, we can see that we see a higher average on Tuesdays and a lower average on
 lm1 <- lm(attend ~ ., events)
 summary(lm1)
 ```
-Only day_of_weekTuesday's p-value is less than the wanted level. 
+
+Only day_of_week Tuesday's p-value is less than the wanted level. 
 
 ## Opponents
 
@@ -364,7 +367,7 @@ Therefore, we will not consider opponents relations in attendance.
 
 # Linear Regression Model and Validating
 
-First, we regress attendance on month, day of the week, and boblehead.
+First, we regress attendance on month, day of the week, and bobblehead.
 
 ```{r}
 model1 <- lm(attend ~ month + day_of_week + bobblehead, data = events)
@@ -396,8 +399,6 @@ test <- events[-train_ind, ]
 model <- lm(formula = attend ~ month + day + day_of_week + opponent + temp + skies + day_night + cap + shirt + fireworks + bobblehead, data = train)
 
 summary(model)
-
-#plot(model1) # I don't know whether this is useful or not. fireworks and month
 ```
 
 We test the null hypothesis, "Giving bobblehead has no effect on attendance," in the summary table along the lines of the bobbleheadYES. If the p-value on the same line is significant (> 0.05), then the null and the data are consistent. We reject the null if the p-value is small because the data contradicts the null. We reject the null since the p-value is very small. Consequently, we draw the conclusion that bobbleheads have an impact on attendance, although a favorable one given the estimate's positive. On average, we anticipate a rise in attendance.
@@ -595,36 +596,6 @@ coef(final)["bobbleheadYES"]
 
 With the best multiple regression model to predict attendance, including bobblehead promotions, we can see that bobblehead promotions contribute positively to the games' attendance, considering the tests conducted earlier.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-lm1 <- lm(attend ~ ., events)
-summary(lm1)
-```
-
-
-```{r}
-anova(lm1)
-```
-
 ```{r}
 dbDisconnect(con)
 ```
-
